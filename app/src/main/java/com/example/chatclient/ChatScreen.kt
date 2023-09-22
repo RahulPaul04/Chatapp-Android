@@ -29,22 +29,31 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.chatclient.ui.theme.ChatClientTheme
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.runtime.LaunchedEffect
 
-data class RowData( val text: String, val addSpacer: Boolean)
+data class RowData( val text: String, val addSpacer: Boolean,val color: Color)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Chat(
     chatViewModel : ChatViewModel = viewModel(),
-     modifier: Modifier = Modifier
+     modifier: Modifier = Modifier,
 ) {
 
-    chatViewModel.connectToWebSocket()
+    LaunchedEffect(true){
+        chatViewModel.connectToWebSocket()
+    }
+
+
     Column {
         var message by remember {
             mutableStateOf("")
         }
-        val rowList = remember { mutableStateListOf<RowData>() }
+
+        var rowList = remember {
+            chatViewModel.rowList
+        }
+
 
         Column(modifier = Modifier.weight(1f)) {
             Spacer(modifier = Modifier.weight(1f))
@@ -64,7 +73,7 @@ fun Chat(
                         style = TextStyle(color = Color.Black, fontSize = 20.sp),
                         modifier = Modifier
                             .padding(8.dp)
-                            .background(color = Color.Cyan, shape = RoundedCornerShape(10.dp))
+                            .background(color = rowData.color, shape = RoundedCornerShape(10.dp))
                             .widthIn(max = maxWidth)
                             .padding(5.dp)
                     )
@@ -82,11 +91,12 @@ fun Chat(
                 modifier = Modifier.padding(16.dp)
             )
             Button(
-                onClick = { rowList.add(RowData( message, true))
+                onClick = { rowList.add(RowData( message, true, color = Color(0xFF87CEEB)))
 
                           chatViewModel.sendMessage(message)
                             message = ""},
                 modifier = Modifier.padding(16.dp)) {
+
 
             }
         }
@@ -101,6 +111,7 @@ fun message(msg:String){
 
 
     ) {
+
 
         val configuration = LocalConfiguration.current
         val maxWidth = (configuration.screenWidthDp * 3 / 5).dp
